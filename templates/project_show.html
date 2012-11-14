@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block body %}
+  {% if session.logged_in %}
+  <h2>{% if project %}Modify project {{ project.name }}{% else %}Add new project{% endif %}</h2>
+  <form action="{{ url_for('project_show') }}{% if project %}{{ project.id }}{% endif %}" method="post">
+    <input type="text" name="name" id="name" value="{% if project %}{{ project.name }}{% endif %}"/>
+	<input type="submit"/>
+  </form>
+  {% endif %}
+  <table cellspacing="0" border="1">
+  {% for p in projects %}
+  <tr>
+    <td><a href="{{ url_for('project_show') }}{{ p.id }}">{{ p.name }}</a></td>
+	<td>{{ (p.time_spent / 60)|round(2) }}</td>
+	<td>{{ (p.time_spent / 3600)|round(2) }}</td>
+  </tr>
+  {% endfor %}
+  </table>
+{% endblock %}

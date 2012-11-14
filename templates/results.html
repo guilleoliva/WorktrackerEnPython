@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block body %}
+<a href="{{ url_for('results', offset=(offset+1)) }}">Day before</a>
+&nbsp;
+{% if offset > 0 %}<a href="{{ url_for('results', offset=(offset-1)) }}">Day after</a>{% endif %}
+<table>
+    <tr>
+        <th>Project</th>
+        <th>Minutes today</th>
+        <th>Hours today</th>
+    </tr>
+    {% for p in projects %}
+    <tr>
+        <td><a href="{{ url_for('results_details', pid=p.id, offset=offset) }}">{{ p.name }}</td>
+        <td>{{ (times[p.id]/60)|round(2) }}</td>
+        <td>{{ (times[p.id]/3600)|round(2) }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td><strong>Total</strong></td>
+        <td><strong>{{ (total/60)|round(2) }}</strong></td>
+        <td><strong>{{ (total/3600)|round(2) }}</strong></td>
+    </tr>
+    <tr>
+        <td><strong>AFK</strong></td>
+        <td><strong>{{ (idle/60)|round(2) }}</strong></td>
+        <td><strong>{{ (idle/3600)|round(2) }}</strong></td>
+    </tr>
+    <tr>
+        <td><strong>Effective</strong></td>
+        <td><strong>{{ ((total-idle)/60)|round(2) }}</strong></td>
+        <td><strong>{{ ((total-idle)/3600)|round(2) }}</strong></td>
+    </tr>
+</table>
+{% endblock %}

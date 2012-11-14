@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+{% block body %}
+  <script type="text/javascript">
+    $(function(){
+	$("#select_all").click(function(){
+	  var ck = $("#select_all").attr("checked");
+	  if(ck == undefined)
+		ck = false;
+	  $(".wow_check").attr("checked", ck);
+	  mark_checked();
+	});
+	$(".wow_check").click(function(event){
+	    $(this).attr("checked", !$(this).attr("checked"));
+	});
+	$(".window_row").click(function(){
+	    var ckbox = $(this).find(".wow_check");
+	    ckbox.attr("checked", !ckbox.attr("checked"));
+	    mark_checked(ckbox);
+	});
+	mark_checked();
+    });
+  
+    function mark_checked(jQelem)
+    {
+	if(jQelem == undefined)
+	    jQelem = $(".wow_check");
+	jQelem.each(function(){
+	    if($(this).attr("checked"))
+		$(this).parent().parent().addClass('checked');
+	    else
+		$(this).parent().parent().removeClass('checked');
+	});
+    }
+  </script>
+  {% if session.logged_in %}
+	<a href="{{ url_for('results_details', pid=active_project.id, offset=(offset+1)) }}">Day before</a>
+	&nbsp;
+	{% if offset > 0 %}<a href="{{ url_for('results_details', pid=active_project.id, offset=(offset-1)) }}">Day after</a>{% endif %}
+	<br>
+	  <h1>Results for project {{ active_project.name }}</h1>
+	  <br>
+	  {% if work_on_window.count() %}
+	  <form action="{{ url_for('results_details', pid=active_project.id) }}" method="post">
+		  Change to project: <select name="project_select" id="project_select">
+			{% for project in projects %}
+			<option id="project_{{ project.id }}" value="{{ project.id }}">{{ project.name }}</option>
+			{% endfor %}
+		  </select>
+		  <input type="submit" value="Change"/>
+		  <table border="1" cellspacing="0">
+			<tr>
+				<th>Date</th>
+				<th>Time</th>
+				<th>Window title</th>
+				<th>Window class</th>
+				<th>T[sec]</th>
+				<th><input type="checkbox" id="select_all" name="select_all"/></th>
+			</tr>
+		{% endif %}
+			{% for item in work_on_window %}
+			<tr class="window_row">
+				<td>{{ item.timestamp.strftime('%d/%m/%Y') }}</td>
+				<td>{{ item.timestamp.strftime('%H:%M:%S') }}</td>
+				<td>{{ item.window_title }}</td>
+				<td>{{ item.window_class_1 }}</td>
+				<td>{{ item.seconds_on_window }} </td>
+				<td><input type="checkbox" class="wow_check" name="wow" id="wow_{{ item.id }}" value="{{ item.id }}" {% if item in hl %} checked="true"{% endif %}/></td>
+			</tr>
+			{% else %}
+			<li><em>No work items found! You are free to go.</em>
+			</tr>
+			{% endfor %}
+		  </table>
+		</form>
+  {% endif %}
+{% endblock %}

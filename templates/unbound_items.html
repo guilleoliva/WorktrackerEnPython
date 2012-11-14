@@ -1,0 +1,120 @@
+{% extends "layout.html" %}
+{% block body %}
+  <script type="text/javascript">
+    $(function(){
+		var $search = $("#search");
+		var p = $search.position();
+		var searchPos = p.top - $(window).scrollTop();
+		
+		$(window).scroll(function(){
+			var s = $(window).scrollTop();
+			if(s > searchPos)
+				$search.css("top", "0px");
+			else
+				$search.css("top", searchPos - s);
+		});
+		$("#add").keypress(function(event){
+			if(event.keyCode == 13)
+			{
+				var q = $(this).val();
+				var re = new RegExp(".*"+q+".*", "i");
+				$(".w_title").each(function(){
+					if($(this).text().match(re) || $(this).siblings(".w_class").text().match(re))
+					{
+						$check = $(this).parent().find(".wow_check");
+						$check.attr("checked", true);
+						mark_checked($check);
+					}
+				});
+			}
+		});
+		
+		$("#rm").keypress(function(event){
+			if(event.keyCode == 13)
+			{
+				var q = $(this).val();
+				var re = new RegExp(".*"+q+".*", "i");
+				$(".w_title").each(function(){
+					if($(this).text().match(re) || $(this).siblings(".w_class").text().match(re))
+					{
+						$check = $(this).parent().find(".wow_check");
+						$check.attr("checked", false);
+						mark_checked($check);
+					}
+				});
+			}
+		});
+		
+		$("#select_all").click(function(){
+		  var ck = $("#select_all").attr("checked");
+		  if(ck == undefined)
+			ck = false;
+		  $(".wow_check").attr("checked", ck);
+		  mark_checked();
+		});
+		$(".wow_check").click(function(event){
+			$(this).attr("checked", !$(this).attr("checked"));
+		});
+		$(".window_row").click(function(){
+			var ckbox = $(this).find(".wow_check");
+			ckbox.attr("checked", !ckbox.attr("checked"));
+			mark_checked(ckbox);
+		});
+		mark_checked();
+    });
+  
+    function mark_checked(jQelem)
+    {
+		if(jQelem == undefined)
+			jQelem = $(".wow_check");
+		jQelem.each(function(){
+			if($(this).attr("checked"))
+				$(this).parent().parent().addClass('checked');
+			else
+				$(this).parent().parent().removeClass('checked');
+		});
+    }
+	
+  </script>
+  {% if session.logged_in %}
+	  Hello admin! <br>
+	  <div style="height:20px;"></div>
+	  <div id="search" style="position:fixed; top:153px; left:29px; background:#FFF; width:435px; padding-left:15px;">
+		Add: <input type="text" name="add" id="add" /> &nbsp; Remove: <input type="text" name="rm" id="rm" />
+	  </div>
+	  <br>
+	  {% if work_on_window.count() %}
+	  <form action="{{ url_for('unbound_items') }}" method="post">
+		  Add to project: <select name="project_select" id="project_select">
+			{% for project in projects %}
+			<option id="project_{{ project.id }}" value="{{ project.id }}">{{ project.name }}</option>
+			{% endfor %}
+		  </select>
+		  <input type="submit" value="Add"/>
+		  <table border="1" cellspacing="0">
+			<tr>
+				<th>Date</th>
+				<th>Time</th>
+				<th>Window title</th>
+				<th>Window class</th>
+				<th>T[sec]</th>
+				<th><input type="checkbox" id="select_all" name="select_all"/></th>
+			</tr>
+		{% endif %}
+			{% for item in work_on_window %}
+			<tr class="window_row">
+				<td>{{ item.timestamp.strftime('%d/%m/%Y') }}</td>
+				<td>{{ item.timestamp.strftime('%H:%M:%S') }}</td>
+				<td class="w_title">{{ item.window_title }}</td>
+				<td class="w_class">{{ item.window_class_1 }}</td>
+				<td>{{ item.seconds_on_window }} </td>
+				<td><input type="checkbox" class="wow_check" name="wow" id="wow_{{ item.id }}" value="{{ item.id }}" {% if item in hl %} checked="true"{% endif %}/></td>
+			</tr>
+			{% else %}
+			<li><em>No work items found! You are free to go.</em>
+			</tr>
+			{% endfor %}
+		  </table>
+		</form>
+  {% endif %}
+{% endblock %}
